@@ -1,0 +1,11 @@
+### Update basket item
+PUT {{host}}/api/basket
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "productId": "00000000-0000-0000-0000-000000000001",
+  "size": "M",
+  "color": "Negro",
+  "quantity": 2
+}
