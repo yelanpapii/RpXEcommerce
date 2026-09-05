@@ -2,7 +2,7 @@ namespace Modules.Stocks.Features.Features.Shared.Routes;
 
 internal static class RouteConsts
 {
-    internal const string BaseRoute = "/api/stocks";
+    internal const string BaseRoute = "/stocks";
     internal const string CommonTag = "Stocks";
 
 	internal const string Create = BaseRoute;

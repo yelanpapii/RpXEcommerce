@@ -9,15 +9,24 @@ using Modules.Users.Features.Users.Shared.Routes;
 
 namespace Modules.Users.Features.Users.UpdateUser;
 
-public sealed record UpdateUserRequest(string Email, string? Role);
+public sealed record UpdateUserRequest(
+    string Email,
+    string? Role,
+    string? Street = null,
+    string? City = null,
+    string? Zip = null);
 
 public class UpdateUserEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
         app.MapPut(RouteConsts.UpdateUser, Handle)
-            .RequireAuthorization(UserPolicyConsts.UpdatePolicy);
-    }
+            .RequireAuthorization(UserPolicyConsts.UpdatePolicy)
+			.WithTags("Users")
+			.WithDescription("Updates a user's information.");
+
+	}
 
     private static async Task<IResult> Handle(
         string userId,

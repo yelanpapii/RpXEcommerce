@@ -2,7 +2,7 @@ namespace Modules.Users.Features.Users.Shared.Routes;
 
 internal static class RouteConsts
 {
-    private const string BaseRoute = "/api/users";
+    private const string BaseRoute = "/users";
 
     internal const string GetById = $"{BaseRoute}/{{userId}}";
 

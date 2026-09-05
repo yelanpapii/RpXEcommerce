@@ -9,11 +9,15 @@ namespace Modules.Users.Features.Users.GetUserById;
 
 public class GetUserByIdEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
         app.MapGet(RouteConsts.GetById, Handle)
-            .RequireAuthorization(UserPolicyConsts.ReadPolicy);
-    }
+            .RequireAuthorization(UserPolicyConsts.ReadPolicy)
+			.WithTags("Users")
+			.WithDescription("Retrieves a user by their ID.");
+
+	}
 
     private static async Task<IResult> Handle(
         string userId,

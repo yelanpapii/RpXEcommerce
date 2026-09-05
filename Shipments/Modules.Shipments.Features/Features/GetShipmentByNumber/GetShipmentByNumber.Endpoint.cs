@@ -3,15 +3,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Common.API.Abstractions;
 using Modules.Common.API.Extensions;
+using Modules.Shipments.Domain.Policies;
 using Modules.Shipments.Features.Features.Shared.Routes;
 
 namespace Modules.Shipments.Features.Features.GetShipmentByNumber;
 
 public class GetShipmentByNumberEndpoint : IApiEndpoint
 {
-	public void MapEndpoint(WebApplication app)
+	public Asp.Versioning.ApiVersion Version => new(1.0);
+	public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
 	{
-		app.MapGet(RouteConsts.GetByNumber, Handle);
+		app.MapGet(RouteConsts.GetByNumber, Handle)
+			.RequireAuthorization(ShipmentPolicyConsts.ReadPolicy)
+			.WithTags("Shipments")
+			.WithDescription("Retrieves a shipment by its number.");
 	}
 
 	private static async Task<IResult> Handle(

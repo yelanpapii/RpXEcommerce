@@ -32,6 +32,9 @@ internal sealed class UpdateUserHandler(
 
         user.Email = request.Email;
         user.UserName = request.Email;
+        user.Street = request.Street;
+        user.City = request.City;
+        user.Zip = request.Zip;
 
         var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)

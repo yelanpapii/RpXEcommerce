@@ -18,7 +18,8 @@ builder.Services.AddCoreInfrastructure(builder.Configuration, new[]
     CarriersModuleRegistration.ActivityModuleName,
     StocksModuleRegistration.ActivityModuleName,
     CatalogModuleRegistration.ActivityModuleName,
-    BasketModuleRegistration.ActivityModuleName
+    BasketModuleRegistration.ActivityModuleName,
+    CheckoutModuleRegistration.ActivityModuleName
 });
 
 builder.Services
@@ -27,7 +28,8 @@ builder.Services
     .AddCarriersModule(builder.Configuration)
     .AddStocksModule(builder.Configuration)
     .AddCatalogModule(builder.Configuration)
-    .AddBasketModule(builder.Configuration);
+    .AddBasketModule(builder.Configuration)
+    .AddCheckoutModule(builder.Configuration);
 
 // Seed entities in DEVELOPMENT mode
 if (builder.Environment.IsDevelopment())

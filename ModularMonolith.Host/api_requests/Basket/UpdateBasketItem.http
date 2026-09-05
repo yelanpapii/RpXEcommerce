@@ -1,5 +1,5 @@
 ### Update basket item
-PUT {{host}}/api/basket
+PUT {{host}}/api/v1/basket
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

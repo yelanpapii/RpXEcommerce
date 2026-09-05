@@ -1,4 +1,4 @@
-PUT {{host}}/api/users/1e1a45ba-ec70-46a3-b713-8b3458aabd46
+PUT {{host}}/api/v1/users/1e1a45ba-ec70-46a3-b713-8b3458aabd46
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

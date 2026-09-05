@@ -3,15 +3,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Common.API.Abstractions;
 using Modules.Common.API.Extensions;
+using Modules.Shipments.Domain.Policies;
 using Modules.Shipments.Features.Features.Shared.Routes;
 
 namespace Modules.Shipments.Features.Features.DeliverShipment;
 
 public class DeliverShipmentEndpoint : IApiEndpoint
 {
-	public void MapEndpoint(WebApplication app)
+	public Asp.Versioning.ApiVersion Version => new(1.0);
+	public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
 	{
-		app.MapPost(RouteConsts.DeliverShipment, Handle);
+		app.MapPost(RouteConsts.DeliverShipment, Handle)
+			.RequireAuthorization(ShipmentPolicyConsts.UpdatePolicy)
+			.WithTags("Shipments")
+			.WithDescription("Marks a shipment as delivered.");
 	}
 
 	private static async Task<IResult> Handle(

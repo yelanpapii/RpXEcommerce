@@ -2,7 +2,7 @@
 
 internal static class RouteConsts
 {
-    internal const string BaseRoute = "/api/shipments";
+    internal const string BaseRoute = "/shipments";
     
     internal const string GetByNumber = $"{BaseRoute}/{{shipmentNumber}}";
     

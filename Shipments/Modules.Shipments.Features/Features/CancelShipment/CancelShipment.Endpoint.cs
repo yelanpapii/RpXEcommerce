@@ -1,17 +1,24 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Common.API.Abstractions;
 using Modules.Common.API.Extensions;
+using Modules.Shipments.Domain.Policies;
 using Modules.Shipments.Features.Features.Shared.Routes;
 
 namespace Modules.Shipments.Features.Features.CancelShipment;
 
 public class CancelShipmentEndpoint : IApiEndpoint
 {
-	public void MapEndpoint(WebApplication app)
+	public ApiVersion Version => new(1, 0);
+
+	public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
 	{
-		app.MapPost(RouteConsts.CancelShipment, Handle);
+		app.MapPost(RouteConsts.CancelShipment, Handle)
+			.RequireAuthorization(ShipmentPolicyConsts.DeletePolicy)
+			.WithTags("Shipments")
+			.WithDescription("Cancels a shipment.");
 	}
 
 	private static async Task<IResult> Handle(

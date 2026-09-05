@@ -12,9 +12,12 @@ public sealed record RefreshTokenRequest(string Token, string RefreshToken);
 
 public class RefreshTokenEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
-        app.MapPost(RouteConsts.RefreshToken, Handle);
+        app.MapPost(RouteConsts.RefreshToken, Handle)
+            .WithTags("Users")
+            .WithDescription("Refreshes a user's token.");
     }
 
     private static async Task<IResult> Handle(

@@ -9,11 +9,15 @@ namespace Modules.Users.Features.Users.DeleteUser;
 
 public class DeleteUserEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
-        app.MapDelete(RouteConsts.DeleteUser, Handle)
-            .RequireAuthorization(UserPolicyConsts.DeletePolicy);
-    }
+		app.MapDelete(RouteConsts.DeleteUser, Handle)
+			.RequireAuthorization(UserPolicyConsts.DeletePolicy)
+			.WithTags("Users")
+			.WithDescription("Deletes a user by their ID.");
+
+	}
 
     private static async Task<IResult> Handle(
         string userId,

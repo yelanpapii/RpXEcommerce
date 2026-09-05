@@ -13,7 +13,8 @@ namespace Modules.Stocks.Features.Features.CreateStock;
 
 public class CreateStockApiEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
         app.MapPost(RouteConsts.Create, Handle)
             .RequireAuthorization(StockPolicyConsts.CreatePolicy)

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Asp.Versioning;
 using Modules.Common.API.Abstractions;
 
 // ReSharper disable once CheckNamespace
@@ -39,12 +41,28 @@ public static class MapEndpointExtensions
     public static WebApplication MapApiEndpoints(this WebApplication app)
     {
         var endpoints = app.Services.GetRequiredService<IEnumerable<IApiEndpoint>>();
-        
-        foreach (var endpoint in endpoints)
-        {
-            endpoint.MapEndpoint(app);
-        }
 
-        return app;
+		var endpointsByVersion = endpoints.GroupBy(endpoint => endpoint.Version);
+
+		foreach (var versionGroup in endpointsByVersion)
+		{
+			var version = versionGroup.Key;
+
+			var versionSet = app.NewApiVersionSet()
+				.HasApiVersion(version)
+				.ReportApiVersions()
+				.Build();
+
+			var api = app.MapGroup("/api/v{version:apiVersion}")
+				.WithApiVersionSet(versionSet)
+				.MapToApiVersion(version);
+
+			foreach (var endpoint in versionGroup)
+			{
+				endpoint.MapEndpoint(api);
+			}
+		}
+
+		return app;
     }
 }

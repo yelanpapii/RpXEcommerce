@@ -13,12 +13,12 @@ using Modules.Stocks.PublicApi.Contracts;
 
 namespace Modules.Shipments.Features.Features.CreateShipment;
 
-internal interface ICreateShipmentHandler : IHandler
+public interface ICreateShipmentHandler : IHandler
 {
     Task<Result<ShipmentResponse>> HandleAsync(CreateShipmentRequest request, CancellationToken cancellationToken);
 }
 
-internal sealed class CreateShipmentHandler(
+public sealed class CreateShipmentHandler(
     ShipmentsDbContext context,
     IStockModuleApi stockApi,
     IEventPublisher eventPublisher,

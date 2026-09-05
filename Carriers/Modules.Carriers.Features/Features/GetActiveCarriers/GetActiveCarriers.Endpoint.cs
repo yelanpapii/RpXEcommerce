@@ -10,7 +10,8 @@ namespace Modules.Carriers.Features.Features.GetActiveCarriers;
 
 public class GetActiveCarriersApiEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
         app.MapGet(RouteConsts.GetActiveCarriers, Handle)
             .RequireAuthorization(CarrierPolicyConsts.ReadPolicy);

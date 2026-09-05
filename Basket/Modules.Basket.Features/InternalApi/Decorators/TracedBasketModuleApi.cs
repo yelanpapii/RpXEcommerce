@@ -11,6 +11,28 @@ namespace Modules.Basket.Features.InternalApi.Decorators;
 
 public class TracedBasketModuleApi(IBasketModuleApi inner) : IBasketModuleApi
 {
+	public async Task<Result<BasketResponse>> GetAsync(string userId, CancellationToken cancellationToken = default)
+	{
+		using var activity = BasketActivitySource.Instance.StartActivity($"{BasketActivitySource.Instance.Name}.get");
+
+		activity?.SetTag("module", BasketActivitySource.Instance.Name);
+		activity?.SetTag("operation", "Get");
+		activity?.SetTag("user.id", userId);
+
+		try
+		{
+			var response = await inner.GetAsync(userId, cancellationToken);
+			activity?.SetStatus(response.IsSuccess ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+			return response;
+		}
+		catch (Exception ex)
+		{
+			activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+			activity?.SetTag("error.message", ex.Message);
+			throw;
+		}
+	}
+
 	public async Task<Result<BasketResponse>> AddItemAsync(string userId, AddBasketItemRequest request, CancellationToken cancellationToken = default)
 	{
 		using var activity = BasketActivitySource.Instance.StartActivity($"{BasketActivitySource.Instance.Name}.add-item");

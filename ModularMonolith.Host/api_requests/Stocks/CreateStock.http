@@ -1,5 +1,5 @@
 ### Create Stock
-POST {{host}}/api/stocks
+POST {{host}}/api/v1/stocks
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

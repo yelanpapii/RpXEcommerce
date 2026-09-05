@@ -5,6 +5,7 @@ namespace Modules.Basket.PublicApi;
 
 public interface IBasketModuleApi
 {
+	Task<Result<BasketResponse>> GetAsync(string userId, CancellationToken cancellationToken = default);
 	Task<Result<BasketResponse>> AddItemAsync(string userId, AddBasketItemRequest request, CancellationToken cancellationToken = default);
 	Task<Result<BasketResponse>> UpdateItemAsync(string userId, UpdateBasketItemRequest request, CancellationToken cancellationToken = default);
 	Task<Result<Success>> DeleteAsync(string userId, CancellationToken cancellationToken = default);

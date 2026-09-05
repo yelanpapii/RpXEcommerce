@@ -12,9 +12,12 @@ public sealed record LoginUserRequest(string Email, string Password);
 
 public class LoginUserEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
-        app.MapPost(RouteConsts.Login, Handle);
+        app.MapPost(RouteConsts.Login, Handle)
+            .WithTags("Users")
+            .WithDescription("Logs in a user.");
     }
 
     private static async Task<IResult> Handle(

@@ -9,6 +9,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.ToTable("users");
+
+        builder.Property(x => x.Street).HasMaxLength(200);
+        builder.Property(x => x.City).HasMaxLength(100);
+        builder.Property(x => x.Zip).HasMaxLength(20);
         
         // Each User can have many UserClaims
         builder.HasMany(e => e.Claims)

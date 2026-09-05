@@ -1,5 +1,5 @@
 ### Create Carrier
-POST {{host}}/api/carriers
+POST {{host}}/api/v1/carriers
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

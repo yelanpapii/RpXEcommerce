@@ -13,7 +13,8 @@ namespace Modules.Stocks.Features.Features.IncreaseStock;
 
 public class IncreaseStockApiEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
         app.MapPost(RouteConsts.IncreaseStock, Handle)
             .RequireAuthorization(StockPolicyConsts.UpdatePolicy)

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi;
@@ -14,28 +15,41 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddCoreWebApiInfrastructure(this IServiceCollection services)
     {
+        services.AddEndpointsApiExplorer();
+
         services
-            .AddEndpointsApiExplorer()
-            .AddSwaggerGen(options =>
+            .AddApiVersioning(options =>
             {
-	            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
-
-	            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-	            {
-		            In = ParameterLocation.Header,
-		            Description = "JWT Authorization header. Enter: {token} (without Bearer)",
-		            Name = "Authorization",
-		            Type = SecuritySchemeType.Http,
-		            BearerFormat = "JWT",
-		            Scheme = "Bearer"
-	            });
-
-	            options.AddSecurityRequirement(_ =>
-		            new OpenApiSecurityRequirement
-		            {
-			            [new OpenApiSecuritySchemeReference("Bearer")] = []
-		            });
+                options.DefaultApiVersion = new ApiVersion(1.0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ReportApiVersions = true;
+            })
+            .AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
             });
+
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
+
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "JWT Authorization header. Enter: {token} (without Bearer)",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
+            });
+
+            options.AddSecurityRequirement(_ =>
+                new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer")] = []
+                });
+        });
 
         services
             .AddExceptionHandler<GlobalExceptionHandler>()

@@ -16,4 +16,10 @@ public class User : IdentityUser, IAuditableEntity
     public DateTime CreatedAtUtc { get; set; }
 
     public DateTime? UpdatedAtUtc { get; set; }
+
+	public string? Street { get; set; }
+
+	public string? City { get; set; }
+
+	public string? Zip { get; set; }
 }

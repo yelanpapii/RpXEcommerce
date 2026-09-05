@@ -1,5 +1,5 @@
 ### Create Shipment
-POST {{host}}/api/shipments
+POST {{host}}/api/v1/shipments
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

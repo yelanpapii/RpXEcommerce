@@ -4,7 +4,9 @@ using System.Security.Claims;
 using Bogus;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Modules.Basket.Domain.Policies;
 using Modules.Carriers.Domain.Policies;
+using Modules.Catalog.Domain.Policies;
 using Modules.Shipments.Domain.Policies;
 using Modules.Stocks.Domain.Policies;
 using Modules.Users.Domain.Policies;
@@ -24,13 +26,9 @@ public class UserSeedService(
     {
 	    Randomizer.Seed = new Random(4503);
 
-        if (await usersContext.Users.AnyAsync())
-        {
-            logger.LogInformation("Users already exist, skipping user seeding");
-            return;
-        }
+        logger.LogInformation("Resetting users and roles before seeding...");
 
-        logger.LogInformation("Starting user seeding...");
+        await ResetUsersAndRolesAsync();
 
         await CreateRolesAsync();
         await CreateUsersAsync();
@@ -38,6 +36,17 @@ public class UserSeedService(
         await usersContext.SaveChangesAsync();
 
         logger.LogInformation("User seeding completed");
+    }
+
+    private async Task ResetUsersAndRolesAsync()
+    {
+        var users = await usersContext.Users.ToListAsync();
+        usersContext.Users.RemoveRange(users);
+
+        var roles = await usersContext.Roles.ToListAsync();
+        usersContext.Roles.RemoveRange(roles);
+
+        await usersContext.SaveChangesAsync();
     }
 
     private async Task CreateRolesAsync()
@@ -52,31 +61,41 @@ public class UserSeedService(
         await ConfigureManagerRolePermissions(managerRole);
     }
 
-    private async Task ConfigureAdminRolePermissions(Role adminRole)
-    {
-        // Users module permissions
-        await roleManager.AddClaimAsync(adminRole, new Claim(UserPolicyConsts.ReadPolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(UserPolicyConsts.CreatePolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(UserPolicyConsts.UpdatePolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(UserPolicyConsts.DeletePolicy, "true"));
+	private async Task ConfigureAdminRolePermissions(Role adminRole)
+	{
+		// Users module permissions
+		await roleManager.AddClaimAsync(adminRole, new Claim(UserPolicyConsts.ReadPolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(UserPolicyConsts.CreatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(UserPolicyConsts.UpdatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(UserPolicyConsts.DeletePolicy, "true"));
 
-        // Shipments module permissions
-        await roleManager.AddClaimAsync(adminRole, new Claim(ShipmentPolicyConsts.ReadPolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(ShipmentPolicyConsts.CreatePolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(ShipmentPolicyConsts.UpdatePolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(ShipmentPolicyConsts.DeletePolicy, "true"));
+		// Shipments module permissions
+		await roleManager.AddClaimAsync(adminRole, new Claim(ShipmentPolicyConsts.ReadPolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(ShipmentPolicyConsts.CreatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(ShipmentPolicyConsts.UpdatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(ShipmentPolicyConsts.DeletePolicy, "true"));
 
-        // Carriers module permissions
-        await roleManager.AddClaimAsync(adminRole, new Claim(CarrierPolicyConsts.ReadPolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(CarrierPolicyConsts.CreatePolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(CarrierPolicyConsts.UpdatePolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(CarrierPolicyConsts.DeletePolicy, "true"));
+		// Carriers module permissions
+		await roleManager.AddClaimAsync(adminRole, new Claim(CarrierPolicyConsts.ReadPolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(CarrierPolicyConsts.CreatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(CarrierPolicyConsts.UpdatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(CarrierPolicyConsts.DeletePolicy, "true"));
 
-        // Stocks module permissions
-        await roleManager.AddClaimAsync(adminRole, new Claim(StockPolicyConsts.ReadPolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(StockPolicyConsts.CreatePolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(StockPolicyConsts.UpdatePolicy, "true"));
-        await roleManager.AddClaimAsync(adminRole, new Claim(StockPolicyConsts.DeletePolicy, "true"));
+		// Stocks module permissions
+		await roleManager.AddClaimAsync(adminRole, new Claim(StockPolicyConsts.ReadPolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(StockPolicyConsts.CreatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(StockPolicyConsts.UpdatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(StockPolicyConsts.DeletePolicy, "true"));
+
+		await roleManager.AddClaimAsync(adminRole, new Claim(CatalogPolicyConsts.ReadPolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(CatalogPolicyConsts.CreatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(CatalogPolicyConsts.UpdatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(CatalogPolicyConsts.DeletePolicy, "true"));
+
+		await roleManager.AddClaimAsync(adminRole, new Claim(BasketPolicyConsts.ReadPolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(BasketPolicyConsts.CreatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(BasketPolicyConsts.UpdatePolicy, "true"));
+		await roleManager.AddClaimAsync(adminRole, new Claim(BasketPolicyConsts.DeletePolicy, "true"));
     }
 
     private async Task ConfigureManagerRolePermissions(Role managerRole)

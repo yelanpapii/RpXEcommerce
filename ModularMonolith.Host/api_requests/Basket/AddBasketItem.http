@@ -1,5 +1,5 @@
 ### Add basket item
-POST {{host}}/api/basket
+POST {{host}}/api/v1/basket
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

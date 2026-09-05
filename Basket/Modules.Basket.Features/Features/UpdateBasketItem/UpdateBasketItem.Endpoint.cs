@@ -13,7 +13,8 @@ namespace Modules.Basket.Features.Features.UpdateBasketItem;
 
 public sealed class UpdateBasketItemEndpoint : IApiEndpoint
 {
-	public void MapEndpoint(WebApplication app)
+	public Asp.Versioning.ApiVersion Version => new(1.0);
+	public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
 	{
 		app.MapPut(RouteConsts.Basket, Handle)
 			.RequireAuthorization(BasketPolicyConsts.UpdatePolicy)

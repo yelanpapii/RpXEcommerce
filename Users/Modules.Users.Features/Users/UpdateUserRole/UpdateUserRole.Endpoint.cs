@@ -13,11 +13,15 @@ public sealed record UpdateUserRoleRequest(string NewRole);
 
 public class UpdateUserRoleEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
         app.MapPost(RouteConsts.UpdateUserRole, Handle)
-            .RequireAuthorization(UserPolicyConsts.UpdatePolicy);
-    }
+            .RequireAuthorization(UserPolicyConsts.UpdatePolicy)
+			.WithTags("Users")
+			.WithDescription("Updates a user's role.");
+
+	}
 
     private static async Task<IResult> Handle(
         string userId,

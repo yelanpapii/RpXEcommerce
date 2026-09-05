@@ -7,7 +7,7 @@ var redis = builder.AddRedis("Redis")
 	.WithDataVolume("redis-cache");
 
 var monolith = builder.AddProject<Projects.Rpx_ModularMonolith_Host>("rpx-modular-monolith-host")
-	.WithReplicas(3)
+	.WithHttpEndpoint(name: "http")
 	.WithUrls(c => c.Urls.ForEach(u => u.DisplayText = $"Swagger Api ({u.Endpoint?.EndpointName})"))
 	.WithReference(redis)
 	.WithReference(postgres)
@@ -16,6 +16,9 @@ var monolith = builder.AddProject<Projects.Rpx_ModularMonolith_Host>("rpx-modula
 
 builder.AddProject<Projects.Rpx_ApiGateway>("rpx-api-gateway")
 	.WithReference(monolith)
+	.WithEnvironment(
+		"ReverseProxy__Clusters__modularMonolithCluster__Destinations__monolith__Address",
+		monolith.GetEndpoint("http"))
 	.WaitFor(monolith);
 
 

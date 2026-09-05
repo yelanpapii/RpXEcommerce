@@ -1,5 +1,5 @@
 ### Increase Stock
-POST {{host}}/api/stocks/increase
+POST {{host}}/api/v1/stocks/increase
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -9,7 +9,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Increase Stock - Another Product
-POST {{host}}/api/stocks/increase
+POST {{host}}/api/v1/stocks/increase
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

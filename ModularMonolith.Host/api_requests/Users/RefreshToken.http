@@ -1,5 +1,5 @@
 ### Refresh user token
-POST {{host}}/api/users/refresh
+POST {{host}}/api/v1/users/refresh
 Content-Type: application/json
 
 {

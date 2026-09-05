@@ -12,10 +12,14 @@ public sealed record RegisterUserRequest(string Email, string Password, string? 
 
 public class RegisterUserEndpoint : IApiEndpoint
 {
-    public void MapEndpoint(WebApplication app)
+    public Asp.Versioning.ApiVersion Version => new(1.0);
+    public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
     {
-        app.MapPost(RouteConsts.Register, Handle);
-    }
+        app.MapPost(RouteConsts.Register, Handle)
+			.WithTags("Users")
+			.WithDescription("Registers a new user.");
+
+	}
 
     private static async Task<IResult> Handle(
         [FromBody] RegisterUserRequest request,

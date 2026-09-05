@@ -14,7 +14,8 @@ namespace Modules.Catalog.Features.Features.CreateProduct;
 
 public class CreateProduct : IApiEndpoint
 {
-	public void MapEndpoint(WebApplication app)
+	public Asp.Versioning.ApiVersion Version => new(1.0);
+	public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
 	{
 		app.MapPost(RouteConsts.CreateProduct, Handle)
 			.RequireAuthorization(CatalogPolicyConsts.CreatePolicy)

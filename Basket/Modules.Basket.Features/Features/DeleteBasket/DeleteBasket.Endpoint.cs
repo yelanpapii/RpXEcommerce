@@ -12,7 +12,8 @@ namespace Modules.Basket.Features.Features.DeleteBasket;
 
 public sealed class DeleteBasketEndpoint : IApiEndpoint
 {
-	public void MapEndpoint(WebApplication app)
+	public Asp.Versioning.ApiVersion Version => new(1.0);
+	public void MapEndpoint(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app)
 	{
 		app.MapDelete(RouteConsts.Basket, Handle)
 			.RequireAuthorization(BasketPolicyConsts.DeletePolicy)
