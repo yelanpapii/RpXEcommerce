@@ -30,7 +30,7 @@
       <ProjectReference Include="..\Stocks\Modules.Stocks.Features\Modules.Stocks.Features.csproj" />
       <ProjectReference Include="..\Users\Modules.Users.Features\Modules.Users.Features.csproj" />
       <ProjectReference Include="..\Basket\Modules.Basket.Features\Modules.Basket.Features.csproj" />
-      <ProjectReference Include="..\Modules\Checkout\Modules.Checkout.Features\Modules.Checkout.Features.csproj" />
+      <ProjectReference Include="..\Checkout\Modules.Checkout.Features\Modules.Checkout.Features.csproj" />
     </ItemGroup>
 
     <ItemGroup>

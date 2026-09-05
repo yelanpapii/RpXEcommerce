@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\Modules.Common.Domain\Modules.Common.Domain.csproj" />
+    <ProjectReference Include="..\..\Common\Modules.Common.Domain\Modules.Common.Domain.csproj" />
     <ProjectReference Include="..\Modules.Checkout.Domain\Modules.Checkout.Domain.csproj" />
   </ItemGroup>
 </Project>

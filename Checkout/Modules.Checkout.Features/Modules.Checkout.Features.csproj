@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Basket\Modules.Basket.PublicApi\Modules.Basket.PublicApi.csproj" />
+    <ProjectReference Include="..\..\Catalog\Modules.Catalog.PublicApi\Modules.Catalog.PublicApi.csproj" />
+    <ProjectReference Include="..\..\Common\Modules.Common.API\Modules.Common.API.csproj" />
+    <ProjectReference Include="..\..\Common\Modules.Common.Application\Modules.Common.Application.csproj" />
+    <ProjectReference Include="..\..\Stocks\Modules.Stocks.PublicApi\Modules.Stocks.PublicApi.csproj" />
+    <ProjectReference Include="..\..\Users\Modules.Users.PublicApi\Modules.Users.PublicApi.csproj" />
+    <ProjectReference Include="..\..\Shipments\Modules.Shipments.Features\Modules.Shipments.Features.csproj" />
+    <ProjectReference Include="..\Modules.Checkout.Domain\Modules.Checkout.Domain.csproj" />
+    <ProjectReference Include="..\Modules.Checkout.Infrastructure\Modules.Checkout.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules.Checkout.PublicApi\Modules.Checkout.PublicApi.csproj" />
+  </ItemGroup>
+</Project>
