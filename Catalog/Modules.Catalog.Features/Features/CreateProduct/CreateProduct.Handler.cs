@@ -9,6 +9,9 @@ using Modules.Catalog.Infrastructure.Database;
 using Modules.Catalog.PublicApi.Contracts;
 using Modules.Common.Domain.Handlers;
 using Modules.Common.Domain.Results;
+using Modules.Common.Application.Messaging;
+using System.Text.Json;
+using Modules.Common.Infrastructure.Messaging;
 
 namespace Modules.Catalog.Features.Features.CreateProduct;
 
@@ -31,10 +34,10 @@ internal sealed class CreateProductHandler(CatalogDbContext dbContext,
 			return validationResult.ToDomainErrors();
 		}
 
-		var product = await dbContext.Products.FirstOrDefaultAsync(x => x.Name == request.Name && x.SKU == request.SKU, cancellationToken);
+		var product = await dbContext.Products.FirstOrDefaultAsync(x => x.Name == request.Name, cancellationToken);
 		if (product is not null)
 		{
-			logger.LogWarning("Product with Name {ProductName} and SKU {SKU} already exists", request.Name, request.SKU);
+			logger.LogWarning("Product with Name {ProductName} already exists", request.Name);
 
 			return CatalogErrors.AlreadyExists(request.Name);
 		}
@@ -42,6 +45,17 @@ internal sealed class CreateProductHandler(CatalogDbContext dbContext,
 		var requestProduct = request.MapToProduct();
 
 		dbContext.Products.Add(requestProduct);
+		dbContext.OutboxMessages.Add(new OutboxMessage
+		{
+			Id = Guid.NewGuid(),
+			Type = nameof(StockInitializationRequested),
+			Payload = JsonSerializer.Serialize(new StockInitializationRequested(
+				Guid.NewGuid(),
+				requestProduct.Name,
+				requestProduct.Variants.Sum(variant => variant.Stock))),
+			OccurredOnUtc = DateTimeOffset.UtcNow
+		});
+
 		await dbContext.SaveChangesAsync(cancellationToken);
 
 		logger.LogInformation("Created product {ProductId}", requestProduct.Id);

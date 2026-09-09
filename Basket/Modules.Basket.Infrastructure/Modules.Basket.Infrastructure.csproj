@@ -12,5 +12,6 @@
     <ProjectReference Include="..\Modules.Basket.Domain\Modules.Basket.Domain.csproj" />
     <ProjectReference Include="..\Modules.Basket.PublicApi\Modules.Basket.PublicApi.csproj" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <PackageReference Include="RabbitMQ.Client" />
   </ItemGroup>
 </Project>

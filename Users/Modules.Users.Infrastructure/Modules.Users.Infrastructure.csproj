@@ -11,6 +11,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+        <PackageReference Include="RabbitMQ.Client" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     </ItemGroup>
 

@@ -6,6 +6,7 @@ using Modules.Common.Application.Extensions;
 using Modules.Stocks.Features.InternalApi;
 using Modules.Stocks.Features.InternalApi.Decorators;
 using Modules.Stocks.Features.Tracing;
+using Modules.Stocks.Features.Messaging;
 using Modules.Stocks.PublicApi;
 
 // ReSharper disable once CheckNamespace
@@ -35,6 +36,8 @@ public static class StocksModuleRegistration
         services.RegisterApiEndpointsFromAssemblyContaining(typeof(StocksModuleRegistration));
         
         services.RegisterHandlersFromAssemblyContaining(typeof(StocksModuleRegistration));
+
+        services.AddHostedService<StockInitializationConsumer>();
         
         services.AddValidatorsFromAssembly(typeof(StocksModuleRegistration).Assembly);
 

@@ -9,6 +9,7 @@
     <PackageVersion Include="Aspire.Hosting.Redis" Version="13.4.6" />
     <PackageVersion Include="Asp.Versioning.Http" Version="8.1.0" />
     <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="13.5.3" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
@@ -53,5 +54,7 @@
     <PackageVersion Include="xunit.analyzers" Version="[1.27.0]" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
+    <PackageVersion Include="RabbitMQ.Client" Version="7.2.2" />
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.4.6" />
   </ItemGroup>
 </Project>

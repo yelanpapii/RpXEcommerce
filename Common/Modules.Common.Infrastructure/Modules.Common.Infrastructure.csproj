@@ -19,10 +19,12 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+        <PackageReference Include="RabbitMQ.Client" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Modules.Common.Domain\Modules.Common.Domain.csproj" />
+      <ProjectReference Include="..\Modules.Common.Application\Modules.Common.Application.csproj" />
     </ItemGroup>
 
 </Project>

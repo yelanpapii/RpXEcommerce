@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shipments", "Shipments", "{394E7A56-B0BE-4A93-BE06-58E745835A77}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Carriers", "Carriers", "{30EEA210-FA07-472B-94A8-A5853A13FD04}"
+	ProjectSection(SolutionItems) = preProject
+		Common\Modules.Common.Infrastructure\DependencyInjection.cs = Common\Modules.Common.Infrastructure\DependencyInjection.cs
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rpx.ModularMonolith.Host", "ModularMonolith.Host\Rpx.ModularMonolith.Host.csproj", "{0F14083D-1E2D-4C14-8BB2-1D215EABA476}"
 EndProject

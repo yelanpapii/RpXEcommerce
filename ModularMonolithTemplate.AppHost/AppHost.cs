@@ -6,13 +6,17 @@ var postgres = builder.AddPostgres("Postgres")
 var redis = builder.AddRedis("Redis")
 	.WithDataVolume("redis-cache");
 
+var rabbitMq = builder.AddRabbitMQ("RabbitMQ");
+
 var monolith = builder.AddProject<Projects.Rpx_ModularMonolith_Host>("rpx-modular-monolith-host")
 	.WithHttpEndpoint(name: "http")
 	.WithUrls(c => c.Urls.ForEach(u => u.DisplayText = $"Swagger Api ({u.Endpoint?.EndpointName})"))
 	.WithReference(redis)
 	.WithReference(postgres)
+	.WithReference(rabbitMq)
 	.WaitFor(postgres)
-	.WaitFor(redis);
+	.WaitFor(redis)
+	.WaitFor(rabbitMq);
 
 builder.AddProject<Projects.Rpx_ApiGateway>("rpx-api-gateway")
 	.WithReference(monolith)

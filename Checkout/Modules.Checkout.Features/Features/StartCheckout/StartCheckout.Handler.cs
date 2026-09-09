@@ -65,16 +65,22 @@ internal sealed class StartCheckoutHandler(
 				return CheckoutErrors.ProductNotFound(item.ProductId);
 			}
 
-			if (productResult.Value!.Price != item.UnitPrice)
+			var variant = productResult.Value!.Variants.FirstOrDefault(productVariant =>
+				productVariant.Size == item.Size
+				&& (productVariant.ColorName == item.Color || productVariant.ColorCode == item.Color));
+			if (variant is null || variant.Price != item.UnitPrice)
 			{
 				return CheckoutErrors.PriceChanged(item.ProductId);
 			}
 
-			total += productResult.Value.Price * item.Quantity;
+			total += variant.Price * item.Quantity;
 		}
 
+		var stockItems = basket.Items
+			.Select(x => new ProductStockDto(x.ProductName, x.Quantity))
+			.ToList();
 		var stockResult = await stockApi.CheckStockAsync(
-			new CheckStockRequest(basket.Items.Select(x => new ProductStockDto(x.ProductName, x.Quantity)).ToList()),
+			new CheckStockRequest(stockItems),
 			cancellationToken);
 		if (stockResult.IsError)
 		{
@@ -93,6 +99,14 @@ internal sealed class StartCheckoutHandler(
 			return CheckoutErrors.AddressMissing();
 		}
 
+		var decreaseStockResult = await stockApi.DecreaseStockAsync(
+			new DecreaseStockRequest(stockItems),
+			cancellationToken);
+		if (decreaseStockResult.IsError)
+		{
+			return decreaseStockResult.Errors;
+		}
+
 		var orderId = Guid.NewGuid().ToString("N");
 		var checkout = CheckoutEntity.Create(userId, orderId, total);
 		await context.Checkouts.AddAsync(checkout, cancellationToken);
@@ -101,6 +115,7 @@ internal sealed class StartCheckoutHandler(
 		var paymentResult = await paymentGateway.AuthorizeAsync(new PaymentRequest(orderId, userId, total), cancellationToken);
 		if (paymentResult.IsError)
 		{
+			await RestoreStockAsync(stockItems, stockApi, cancellationToken);
 			checkout.Fail();
 			await context.SaveChangesAsync(cancellationToken);
 			return paymentResult.Errors;
@@ -119,6 +134,7 @@ internal sealed class StartCheckoutHandler(
 			cancellationToken);
 		if (shipmentResult.IsError)
 		{
+			await RestoreStockAsync(stockItems, stockApi, cancellationToken);
 			checkout.Fail();
 			await context.SaveChangesAsync(cancellationToken);
 			return shipmentResult.Errors;
@@ -130,6 +146,23 @@ internal sealed class StartCheckoutHandler(
 
 		logger.LogInformation("Completed checkout {CheckoutId} for user {UserId}", checkout.Id, userId);
 		return new CheckoutResponse(checkout.Id, checkout.OrderId, checkout.ShipmentNumber, checkout.Total, checkout.Status, checkout.CreatedAt);
+	}
+
+	private async Task RestoreStockAsync(
+		List<ProductStockDto> stockItems,
+		IStockModuleApi stockApi,
+		CancellationToken cancellationToken)
+	{
+		foreach (var item in stockItems)
+		{
+			var result = await stockApi.IncreaseStockAsync(
+				new IncreaseStockRequest(item.ProductName, item.Quantity),
+				cancellationToken);
+			if (result.IsError)
+			{
+				logger.LogError("Could not restore stock for {ProductName} after checkout failure", item.ProductName);
+			}
+		}
 	}
 	#pragma warning restore MA0051
 }

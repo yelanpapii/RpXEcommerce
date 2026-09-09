@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Modules.Catalog.Domain.Entities;
+using Modules.Common.Infrastructure.Messaging;
 
 namespace Modules.Catalog.Infrastructure.Database;
 
 public class CatalogDbContext(DbContextOptions<CatalogDbContext> optionsBuilder) : DbContext(optionsBuilder)
 {
 	public DbSet<Product> Products { get; set; } = null!;
+	public DbSet<OutboxMessage> OutboxMessages { get; set; } = null!;
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

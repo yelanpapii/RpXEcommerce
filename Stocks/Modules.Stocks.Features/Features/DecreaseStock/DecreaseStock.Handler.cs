@@ -28,56 +28,46 @@ internal sealed class DecreaseStockHandler(
             return validationResult.ToDomainErrors();
         }
 
-        var stocks = await GetProductStocksAsync(request.Products, cancellationToken);
+        var requestedProducts = request.Products
+            .GroupBy(product => product.ProductName)
+            .ToDictionary(group => group.Key, group => group.Sum(product => product.Quantity));
 
-        var errors = VerifyProductQuantities(request.Products, stocks).ToList();
-        if (errors.Count > 0)
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        var productNames = requestedProducts.Keys.ToList();
+        var existingProductNames = await dbContext.ProductStocks
+            .Where(stock => productNames.Contains(stock.ProductName))
+            .Select(stock => stock.ProductName)
+            .ToListAsync(cancellationToken);
+
+        var missingProductName = productNames.FirstOrDefault(name => !existingProductNames.Contains(name));
+        if (missingProductName is not null)
         {
-            return errors;
+            await transaction.RollbackAsync(cancellationToken);
+            return StockErrors.ProductNotFound(missingProductName);
         }
 
-        foreach (var product in request.Products)
+        foreach (var (productName, quantity) in requestedProducts)
         {
-            var stock = stocks[product.ProductName];
+            var updatedRows = await dbContext.ProductStocks
+                .Where(stock => stock.ProductName == productName && stock.AvailableQuantity >= quantity)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(stock => stock.AvailableQuantity, stock => stock.AvailableQuantity - quantity)
+                    .SetProperty(stock => stock.LastUpdatedAt, _ => DateTime.UtcNow), cancellationToken);
 
-            stock.AvailableQuantity -= product.Quantity;
-            stock.LastUpdatedAt = DateTime.UtcNow;
+            if (updatedRows == 0)
+            {
+                var availableQuantity = await dbContext.ProductStocks
+                    .Where(stock => stock.ProductName == productName)
+                    .Select(stock => stock.AvailableQuantity)
+                    .SingleAsync(cancellationToken);
+
+                await transaction.RollbackAsync(cancellationToken);
+                return StockErrors.InsufficientStocks(productName, quantity, availableQuantity);
+            }
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-
+        await transaction.CommitAsync(cancellationToken);
         return Result.Success;
-    }
-
-    private static IEnumerable<Error> VerifyProductQuantities(
-        List<ProductStockDto> products,
-        Dictionary<string, Domain.Entities.ProductStock> stocks)
-    {
-        foreach (var product in products)
-        {
-            if (!stocks.TryGetValue(product.ProductName, out var stock))
-            {
-                yield return StockErrors.ProductNotFound(product.ProductName);
-                continue;
-            }
-
-            if (stock.AvailableQuantity < product.Quantity)
-            {
-                yield return StockErrors.InsufficientStocks(product.ProductName, product.Quantity, stock.AvailableQuantity);
-            }
-        }
-    }
-
-    private async Task<Dictionary<string, Domain.Entities.ProductStock>> GetProductStocksAsync(
-        List<ProductStockDto> products,
-        CancellationToken cancellationToken)
-    {
-        var productNames = products.Select(x => x.ProductName).ToList();
-
-        var stocks = await dbContext.ProductStocks
-            .Where(x => productNames.Contains(x.ProductName))
-            .ToDictionaryAsync(x => x.ProductName, x => x, cancellationToken);
-
-        return stocks;
     }
 }

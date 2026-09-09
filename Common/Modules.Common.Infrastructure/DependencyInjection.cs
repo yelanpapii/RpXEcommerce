@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Modules.Common.Infrastructure.Configuration;
+using Modules.Common.Application.Messaging;
+using Modules.Common.Infrastructure.Messaging;
 using Modules.Common.Infrastructure.Policies;
 using Npgsql;
 using OpenTelemetry.Metrics;
@@ -22,6 +24,9 @@ public static class DependencyInjection
         string[] activityModuleNames)
     {
         services.AddMemoryCache();
+
+		services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
+        services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
 
         services.AddHostOpenTelemetry(activityModuleNames);
 

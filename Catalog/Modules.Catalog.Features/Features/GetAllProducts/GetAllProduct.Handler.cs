@@ -30,12 +30,26 @@ internal sealed class GetAllProductsHandler(ILogger<GetAllProductsHandler> logge
 
 		var products = await catalogDbContext.Products
 			.AsNoTracking()
+			.Include(p => p.Variants)
 			.OrderBy(p => p.CreatedAt)
 			.Skip((page - 1) * pageSize)
 			.Take(pageSize)
-			.Select(p => new ProductDto(p.Id, p.Name, p.Description, p.SKU, p.Price, p.CreatedAt))
 			.ToListAsync(cancellationToken);
 
-		return products;
+		return products.Select(product => new ProductDto(
+			product.Id,
+			product.Name,
+			product.Description,
+			product.CategoryCode,
+			product.StyleId,
+			product.Variants.Select(variant => new ProductVariantDto(
+				variant.Id,
+				variant.Sku.ToString(),
+				variant.ColorName,
+				variant.ColorCode,
+				variant.SizeName,
+				variant.Price,
+				variant.Stock)).ToList(),
+			product.CreatedAt)).ToList();
 	}
 }

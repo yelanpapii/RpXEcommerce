@@ -17,7 +17,8 @@ public class TracedProductsModuleApi(IProductsModuleApi innerApi) : IProductsMod
 
 		activity?.AddTag("product.name", request.Name);
 		activity?.AddTag("product.description", request.Description);
-		activity?.AddTag("product.price", request.Price.ToString());
+		activity?.AddTag("product.variant_count", request.ProductVariant?.Count ?? 0);
+		activity?.AddTag("product.initial_stock", request.ProductVariant?.Sum(variant => variant.Stock) ?? 0);
 
 		try
 		{

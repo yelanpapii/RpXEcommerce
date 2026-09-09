@@ -38,16 +38,19 @@ public class UserSeedService(
         logger.LogInformation("User seeding completed");
     }
 
-    private async Task ResetUsersAndRolesAsync()
-    {
-        var users = await usersContext.Users.ToListAsync();
-        usersContext.Users.RemoveRange(users);
+	private async Task ResetUsersAndRolesAsync()
+	{
+		var users = await usersContext.Users.ToListAsync();
+		usersContext.Users.RemoveRange(users);
 
-        var roles = await usersContext.Roles.ToListAsync();
-        usersContext.Roles.RemoveRange(roles);
+		var roles = await usersContext.Roles.ToListAsync();
+		usersContext.Roles.RemoveRange(roles);
 
-        await usersContext.SaveChangesAsync();
-    }
+		var rolesFromManager = await roleManager.Roles.ToListAsync();
+		rolesFromManager.RemoveAll(r => r.Name == "Admin" || r.Name == "Manager");
+
+		await usersContext.SaveChangesAsync();
+	}
 
     private async Task CreateRolesAsync()
     {

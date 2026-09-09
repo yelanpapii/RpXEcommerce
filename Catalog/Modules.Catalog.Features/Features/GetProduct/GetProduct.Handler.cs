@@ -24,6 +24,7 @@ internal sealed class GetProductHandler(
 
 		var product = await dbContext.Products
 			.AsNoTracking()
+			.Include(p => p.Variants)
 			.FirstOrDefaultAsync(p => p.Id == Guid.Parse(productId), cancellationToken);
 
 		if (product is null)
@@ -32,6 +33,20 @@ internal sealed class GetProductHandler(
 			return CatalogErrors.NotFound(productId);
 		}
 
-		return new ProductDto(product.Id, product.Name, product.Description, product.SKU, product.Price, product.CreatedAt);
+		return new ProductDto(
+			product.Id,
+			product.Name,
+			product.Description,
+			product.CategoryCode,
+			product.StyleId,
+			product.Variants.Select(variant => new ProductVariantDto(
+				variant.Id,
+				variant.Sku.ToString(),
+				variant.ColorName,
+				variant.ColorCode,
+				variant.SizeName,
+				variant.Price,
+				variant.Stock)).ToList(),
+			product.CreatedAt);
 	}
 }

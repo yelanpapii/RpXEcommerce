@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Modules.Catalog.Infrastructure.Database;
 using Modules.Catalog.Infrastructure.Policies;
+using Modules.Catalog.Infrastructure.Messaging;
 using Modules.Common.Infrastructure.Database;
 using Modules.Common.Infrastructure.Policies;
 
@@ -22,6 +23,7 @@ public static class DependencyInjection
 
 		services.AddScoped<IModuleDatabaseMigrator, CatalogDatabaseMigrator>();
 		services.AddSingleton<IPolicyFactory, CatalogPolicyFactory>();
+		services.AddHostedService<CatalogOutboxDispatcher>();
 
 		return services;
 	}
