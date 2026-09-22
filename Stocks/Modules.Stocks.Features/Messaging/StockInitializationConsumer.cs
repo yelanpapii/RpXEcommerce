@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -7,99 +6,94 @@ using Microsoft.Extensions.Options;
 using Modules.Common.Application.Messaging;
 using Modules.Stocks.PublicApi;
 using Modules.Stocks.PublicApi.Contracts;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+using NATS.Client.JetStream;
+using NATS.Client.JetStream.Models;
+using NATS.Net;
 
 namespace Modules.Stocks.Features.Messaging;
 
 public sealed class StockInitializationConsumer(
-	IOptions<RabbitMqOptions> options,
+	IOptions<NatsOptions> options,
 	IServiceScopeFactory scopeFactory,
-	ILogger<StockInitializationConsumer> logger,
-	IConnectionFactory connectionFactory)
+	ILogger<StockInitializationConsumer> logger)
 	: BackgroundService
 {
+	private const int MaxDeliveryAttempts = 5;
+
 	protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 	{
 		var settings = options.Value;
-		await using var connection = await connectionFactory.CreateConnectionAsync(cancellationToken);
-		await using var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+		await using var connection = new NatsClient(settings.Url);
+		var jetStream = connection.CreateJetStreamContext();
 
-		var consumer = new AsyncEventingBasicConsumer(channel);
+		var consumerConfig = new ConsumerConfig()
+		{
+			Name = settings.StockInitializationDurableConsumer,
+			DurableName = settings.StockInitializationDurableConsumer,
+			FilterSubject = settings.StockInitializationSubject,
+			AckPolicy = ConsumerConfigAckPolicy.Explicit,
+			AckWait = TimeSpan.FromSeconds(30)
+		};
 
-		ExecuteMessage(consumer, channel, cancellationToken);
+		var consumer = await jetStream.CreateOrUpdateConsumerAsync(
+		   settings.Stream,
+		   consumerConfig,
+		   cancellationToken);
 
-		await channel.ExchangeDeclareAsync(
-			settings.Exchange,
-			ExchangeType.Direct,
-			durable: true,
-			autoDelete: false,
-			arguments: null,
-			cancellationToken: cancellationToken);
-
-		await channel.QueueDeclareAsync(
-			settings.Queues[nameof(StockInitializationRequested)],
-			durable: true,
-			exclusive: false,
-			autoDelete: false,
-			arguments: null,
-			cancellationToken: cancellationToken);
-
-		await channel.QueueBindAsync(
-			settings.Queues[nameof(StockInitializationRequested)],
-			settings.Exchange,
-			nameof(StockInitializationRequested),
-			arguments: null,
-			cancellationToken: cancellationToken);
-
-		await channel.BasicConsumeAsync(
-			settings.Queues[nameof(StockInitializationRequested)],
-			autoAck: false,
-			consumer: consumer,
-			cancellationToken: cancellationToken);
-
-		await Task.Delay(Timeout.Infinite, cancellationToken);
-	}
-
-	private void ExecuteMessage(AsyncEventingBasicConsumer consumer, IChannel channel, CancellationToken cancellationToken)
-	{
-		consumer.ReceivedAsync += async (_, eventArgs) =>
+		await foreach (var msg in consumer.ConsumeAsync<StockInitializationRequested>(cancellationToken: cancellationToken))
 		{
 			try
 			{
-				var message = JsonSerializer.Deserialize<StockInitializationRequested>(eventArgs.Body.Span)
-					?? throw new InvalidOperationException("The stock initialization message is empty.");
+				await ProcessMessageAsync(msg, cancellationToken);
+				await msg.AckAsync(cancellationToken: cancellationToken);
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "Failed to process stock initialization message");
+			}
+		}
+	}
 
-				using var scope = scopeFactory.CreateScope();
+	private async Task ProcessMessageAsync(INatsJSMsg<StockInitializationRequested> message, CancellationToken cancellationToken)
+	{
+		try
+		{
+			var request = message.Data
+				?? throw new InvalidOperationException("The stock initialization message is empty.");
 
-				var stockApi = scope.ServiceProvider.GetRequiredService<IStockModuleApi>();
+			using var scope = scopeFactory.CreateScope();
+			var stockApi = scope.ServiceProvider.GetRequiredService<IStockModuleApi>();
+			var result = await stockApi.CreateStockAsync(
+				new CreateStockRequest(request.ProductName, request.Quantity),
+				cancellationToken).ConfigureAwait(false);
 
-				var result = await stockApi.CreateStockAsync(
-					new CreateStockRequest(message.ProductName, message.Quantity),
-					cancellationToken);
-
-				if (result.IsError)
+			if (result.IsError)
+			{
+				if (result.Errors.All(error => error.Code == "Stocks.ProductAlreadyExists"))
 				{
-					if (result.Errors.All(error => error.Code == "Stocks.ProductAlreadyExists"))
-					{
-						logger.LogInformation("Stock for product {ProductName} was already initialized; acknowledging duplicate message", message.ProductName);
-						await channel.BasicAckAsync(eventArgs.DeliveryTag, multiple: false);
-						return;
-					}
-
-					logger.LogError("Could not initialize stock for product {ProductName}: {Errors}", message.ProductName, result.Errors);
-					await channel.BasicNackAsync(eventArgs.DeliveryTag, multiple: false, requeue: false);
+					logger.LogInformation("Stock for product {ProductName} was already initialized; acknowledging duplicate message", request.ProductName);
+					await message.AckAsync(cancellationToken: cancellationToken);
 					return;
 				}
 
-				await channel.BasicAckAsync(eventArgs.DeliveryTag, multiple: false);
-			}
-			catch (Exception exception)
-			{
-				logger.LogError(exception, "Error processing stock initialization message");
-				await channel.BasicNackAsync(eventArgs.DeliveryTag, multiple: false, requeue: true);
-			}
-		};
+				var deliveryCount = message.Metadata?.NumDelivered ?? 1;
+				if (deliveryCount >= MaxDeliveryAttempts)
+				{
+					logger.LogError("Giving up on stock initialization for {ProductName} after {Attempts} attempts: {Errors}", request.ProductName, deliveryCount, result.Errors);
+					await message.AckAsync(cancellationToken: cancellationToken);
+					return;
+				}
 
+				logger.LogError("Could not initialize stock for product {ProductName} (attempt {Attempts}): {Errors}", request.ProductName, deliveryCount, result.Errors);
+				return; // no ack -> redeliver
+			}
+
+			await message.AckAsync(cancellationToken: cancellationToken);
+		}
+		catch (Exception exception)
+		{
+			logger.LogError(exception, "Error processing stock initialization message");
+			// Without an ACK JetStream will redeliver the message after AckWait.
+		}
 	}
 }

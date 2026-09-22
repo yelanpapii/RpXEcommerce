@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Modules.Common.Infrastructure.Configuration;
 using Modules.Common.Application.Messaging;
+using Modules.Common.Infrastructure.Configuration;
 using Modules.Common.Infrastructure.Messaging;
 using Modules.Common.Infrastructure.Policies;
+using NATS.Net;
 using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -25,10 +26,25 @@ public static class DependencyInjection
     {
         services.AddMemoryCache();
 
-		services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
-        services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
+        services.AddOptions<NatsOptions>()
+            .Configure(options =>
+            {
+                options.Url = configuration.GetConnectionString("Nats")
+                    ?? configuration["Nats:Url"]
+                    ?? "nats://localhost:4222";
+                options.Stream = configuration["Nats:Stream"] ?? options.Stream;
+                options.SubjectPrefix = configuration["Nats:SubjectPrefix"] ?? options.SubjectPrefix;
+                options.StockInitializationSubject = configuration["Nats:StockInitializationSubject"] ?? options.StockInitializationSubject;
+                options.StockInitializationDurableConsumer = configuration["Nats:StockInitializationDurableConsumer"] ?? options.StockInitializationDurableConsumer;
+            });
 
-        services.AddHostOpenTelemetry(activityModuleNames);
+		services.AddSingleton(sp =>
+			new NatsClient(sp.GetRequiredService<IOptions<NatsOptions>>().Value.Url));
+
+		services.AddSingleton<INatsPublisher, NatsJetStreamPublisher>();
+		services.AddHostedService<NatsStreamProvisioner>();
+
+		services.AddHostOpenTelemetry(activityModuleNames);
 
         services.AddJwtAuthentication(configuration);
         services.AddClaimsAuthorization();

@@ -7,5 +7,5 @@ internal static class RouteConsts
 
 	internal const string Create = BaseRoute;
     internal const string IncreaseStock = $"{BaseRoute}/increase";
-    internal const string GetStocksByProductName = $"{BaseRoute}/{{productName}}";
+    internal const string GetStocksByProductName = BaseRoute;
 }

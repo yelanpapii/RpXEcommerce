@@ -9,8 +9,8 @@
     <ItemGroup>
         <PackageReference Include="EFCore.NamingConventions" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="NATS.Net" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-        <PackageReference Include="RabbitMQ.Client" />
     </ItemGroup>
 
     <ItemGroup>

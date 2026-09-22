@@ -2,7 +2,7 @@ namespace Modules.Basket.Domain.Entities;
 
 public sealed class ShoppingBasket
 {
-	public ShoppingBasket(string userId, IEnumerable<BasketItem> items)
+	public ShoppingBasket(string userId, List<BasketItem> items)
 	{
 		UserId = userId;
 		Items = items.ToList();

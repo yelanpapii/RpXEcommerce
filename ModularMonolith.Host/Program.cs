@@ -6,8 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.AddRabbitMQClient("RabbitMq");
-
 builder.Services.AddWebHostDependencies();
 
 builder.AddCoreHostLogging();

@@ -1,6 +1,6 @@
 namespace Modules.Common.Application.Messaging;
 
-public interface IRabbitMqPublisher
+public interface INatsPublisher
 {
 	Task PublishAsync<TMessage>(TMessage message, CancellationToken cancellationToken);
 }

@@ -20,7 +20,7 @@
 
     <ItemGroup>
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
-        <PackageReference Include="RabbitMQ.Client" />
+        <PackageReference Include="NATS.Net" />
     </ItemGroup>
 
 </Project>

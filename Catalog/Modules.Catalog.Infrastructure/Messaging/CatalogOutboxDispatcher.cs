@@ -11,7 +11,7 @@ namespace Modules.Catalog.Infrastructure.Messaging;
 
 public sealed class CatalogOutboxDispatcher(
 	IServiceScopeFactory scopeFactory,
-	IRabbitMqPublisher publisher,
+	INatsPublisher publisher,
 	ILogger<CatalogOutboxDispatcher> logger)
 	: BackgroundService
 {

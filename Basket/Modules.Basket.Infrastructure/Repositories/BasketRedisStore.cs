@@ -7,7 +7,7 @@ namespace Modules.Basket.Infrastructure.Repositories;
 
 internal sealed class BasketRedisStore(IDistributedCache cache) : IBasketStore
 {
-	private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+	private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
 	public async Task<ShoppingBasket?> GetAsync(string userId, CancellationToken cancellationToken)
 	{
