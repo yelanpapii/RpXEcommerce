@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Modules.Common.Application.Messaging;
+using Modules.Common.Application.Messaging.Stocks;
 using Modules.Common.Infrastructure.Configuration;
 using Modules.Common.Infrastructure.Messaging;
 using Modules.Common.Infrastructure.Policies;
@@ -26,17 +27,14 @@ public static class DependencyInjection
     {
         services.AddMemoryCache();
 
-        services.AddOptions<NatsOptions>()
-            .Configure(options =>
-            {
-                options.Url = configuration.GetConnectionString("Nats")
-                    ?? configuration["Nats:Url"]
-                    ?? "nats://localhost:4222";
-                options.Stream = configuration["Nats:Stream"] ?? options.Stream;
-                options.SubjectPrefix = configuration["Nats:SubjectPrefix"] ?? options.SubjectPrefix;
-                options.StockInitializationSubject = configuration["Nats:StockInitializationSubject"] ?? options.StockInitializationSubject;
-                options.StockInitializationDurableConsumer = configuration["Nats:StockInitializationDurableConsumer"] ?? options.StockInitializationDurableConsumer;
-            });
+		services.AddOptions<NatsOptions>()
+			.Bind(configuration.GetSection("Nats"))
+			.PostConfigure(options =>
+			{
+				options.Url = configuration.GetConnectionString("Nats") ?? options.Url;
+			})
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
 
 		services.AddSingleton(sp =>
 			new NatsClient(sp.GetRequiredService<IOptions<NatsOptions>>().Value.Url));
@@ -71,7 +69,8 @@ public static class DependencyInjection
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddNpgsql()
-                    .AddSource(activityModuleNames);
+                    .AddSource(activityModuleNames)
+                    .AddSource("messaging");
 
                 tracing.AddOtlpExporter();
             });

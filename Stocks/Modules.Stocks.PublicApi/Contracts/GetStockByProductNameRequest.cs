@@ -4,4 +4,4 @@ using System.Text;
 
 namespace Modules.Stocks.PublicApi.Contracts;
 
-public sealed record GetStocksByProductNameRequest(string ProductName);
+public sealed record GetStocksByProductIdRequest(Guid ProductId, Guid? VariantId);

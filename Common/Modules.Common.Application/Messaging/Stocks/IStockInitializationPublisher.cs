@@ -1,4 +1,4 @@
-namespace Modules.Common.Application.Messaging;
+namespace Modules.Common.Application.Messaging.Stocks;
 
 public interface INatsPublisher
 {

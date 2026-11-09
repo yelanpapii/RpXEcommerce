@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Modules.Catalog.Features.Features.Shared.Converters;
 using Modules.Catalog.Features.Features.Shared.Errors;
 using Modules.Catalog.Infrastructure.Database;
 using Modules.Catalog.PublicApi.Contracts;
+using Modules.Common.Application.Messaging.Stocks;
 using Modules.Common.Domain.Handlers;
 using Modules.Common.Domain.Results;
-using Modules.Common.Application.Messaging;
-using System.Text.Json;
 using Modules.Common.Infrastructure.Messaging;
 
 namespace Modules.Catalog.Features.Features.CreateProduct;
@@ -22,7 +24,8 @@ internal interface ICreateProductHandler : IHandler
 
 internal sealed class CreateProductHandler(CatalogDbContext dbContext,
 	IValidator<CreateProductRequest> validator,
-	ILogger<CreateProductHandler> logger) : ICreateProductHandler
+	ILogger<CreateProductHandler> logger,
+	ProductMapper productMapper) : ICreateProductHandler
 {
 	public async Task<Result<Success>> HandleAsync(CreateProductRequest request, CancellationToken cancellationToken)
 	{
@@ -42,17 +45,31 @@ internal sealed class CreateProductHandler(CatalogDbContext dbContext,
 			return CatalogErrors.AlreadyExists(request.Name);
 		}
 
-		var requestProduct = request.MapToProduct();
+		var mappingResult = productMapper.MapToProduct(request);
+		if (mappingResult.IsError)
+		{
+			return mappingResult.Errors;
+		}
 
+		var requestProduct = mappingResult.Value!;
 		dbContext.Products.Add(requestProduct);
+
+		var messageId = Guid.CreateVersion7();
+		var requestedVariants = requestProduct.Variants
+			.ToDictionary(
+				variant => variant.Sku.ToString(),
+				variant => variant.Stock.ToString(CultureInfo.InvariantCulture));
+
 		dbContext.OutboxMessages.Add(new OutboxMessage
 		{
-			Id = Guid.NewGuid(),
+			Id = messageId,
 			Type = nameof(StockInitializationRequested),
 			Payload = JsonSerializer.Serialize(new StockInitializationRequested(
-				Guid.NewGuid(),
+				messageId,
+				requestProduct.Id,
 				requestProduct.Name,
-				requestProduct.Variants.Sum(variant => variant.Stock))),
+				requestedVariants,
+				requestProduct.Variants.Sum(v => v.Stock))),
 			OccurredOnUtc = DateTimeOffset.UtcNow
 		});
 

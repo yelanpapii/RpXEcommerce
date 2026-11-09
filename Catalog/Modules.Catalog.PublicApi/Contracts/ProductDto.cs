@@ -11,9 +11,11 @@ public sealed record ProductDto(
 
 public sealed record ProductVariantDto(
 	Guid Id,
+	Guid ProductId,
 	string SKU,
-	string ColorName,
 	string ColorCode,
-	string Size,
+	string ColorName,
+	string SizeCode,
+	string SizeName,
 	decimal Price,
 	int Stock);

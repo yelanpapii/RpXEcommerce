@@ -33,6 +33,7 @@ public class CreateProduct : IApiEndpoint
 		{
 			return Results.BadRequest();
 		}
-		return Results.Ok(result.Value);
+
+		return Results.Created();
 	}
 }

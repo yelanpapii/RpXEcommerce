@@ -11,21 +11,43 @@ public sealed class ProductVariantConfiguration : IEntityTypeConfiguration<Produ
 	{
 		builder.ToTable("catalog_product_variants");
 		builder.HasKey(variant => variant.Id);
-		builder.Property(variant => variant.Sku)
+
+		builder.Property(v => v.Sku)
 			.HasConversion(
 				sku => sku.ToString(),
-				value => ClothingSku.Parse(value))
-			.HasMaxLength(100)
+				value => ClothingSku.FromPersistedValue(value))
+			.HasColumnName("sku")
+			.HasMaxLength(40)
 			.IsRequired();
-		builder.Property(variant => variant.ColorName).IsRequired().HasMaxLength(100);
-		builder.Property(variant => variant.ColorCode).IsRequired().HasMaxLength(3);
-		builder.Property(variant => variant.SizeName).IsRequired().HasMaxLength(20);
-		builder.Property(variant => variant.Price).HasPrecision(18, 2).IsRequired();
-		builder.Property(variant => variant.Stock).IsRequired();
-		builder.HasIndex(variant => variant.Sku).IsUnique();
-		builder.HasOne(variant => variant.Product)
-			.WithMany(product => product.Variants)
-			.HasForeignKey(variant => variant.ProductId)
-			.OnDelete(DeleteBehavior.Cascade);
+
+		builder.HasIndex(v => v.Sku).IsUnique();
+
+		builder.Property(v => v.Color)
+			.HasConversion(
+				color => color.Code,
+				code => Color.Of(code))
+			.HasColumnName("color_code")
+			.HasMaxLength(6)
+			.IsRequired();
+
+		builder.Property(v => v.Size)
+			.HasConversion(
+				size => size.Code,
+				code => Size.Of(code))
+			.HasColumnName("size")
+			.HasMaxLength(10)
+			.IsRequired();
+
+		builder.Property(v => v.Price)
+			.HasColumnName("price")
+			.HasPrecision(18, 2)
+			.IsRequired();
+
+		builder.Property(v => v.Stock)
+			.HasColumnName("stock")
+			.IsRequired();
+
+		builder.Property(v => v.RowVersion)
+			.IsRowVersion();
 	}
 }

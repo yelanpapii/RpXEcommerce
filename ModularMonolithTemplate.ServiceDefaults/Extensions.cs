@@ -77,6 +77,7 @@ public static class Extensions
 			.WithTracing(tracing =>
 			{
 				tracing.AddSource(builder.Environment.ApplicationName)
+					   .AddSource("messaging")
 					   .AddAspNetCoreInstrumentation(tracing =>
 						   tracing.Filter = context =>
 							   !context.Request.Path.StartsWithSegments(HealthEndpointPath, StringComparison.Ordinal)

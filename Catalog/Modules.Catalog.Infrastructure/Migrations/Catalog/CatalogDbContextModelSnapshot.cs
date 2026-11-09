@@ -32,7 +32,8 @@ namespace Modules.Catalog.Infrastructure.Migrations.Catalog
 
                     b.Property<string>("CategoryCode")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
                         .HasColumnName("category_code");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -40,8 +41,8 @@ namespace Modules.Catalog.Infrastructure.Migrations.Catalog
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
                     b.Property<string>("Name")
@@ -50,12 +51,26 @@ namespace Modules.Catalog.Infrastructure.Migrations.Catalog
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
                     b.Property<int>("StyleId")
                         .HasColumnType("integer")
                         .HasColumnName("style_id");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
                     b.HasKey("Id")
                         .HasName("pk_catalog_products");
+
+                    b.HasIndex("CategoryCode", "StyleId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_catalog_products_category_code_style_id");
 
                     b.ToTable("catalog_products", "catalog");
                 });
@@ -67,17 +82,11 @@ namespace Modules.Catalog.Infrastructure.Migrations.Catalog
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ColorCode")
+                    b.Property<string>("Color")
                         .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)")
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)")
                         .HasColumnName("color_code");
-
-                    b.Property<string>("ColorName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("color_name");
 
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
@@ -88,16 +97,23 @@ namespace Modules.Catalog.Infrastructure.Migrations.Catalog
                         .HasColumnType("uuid")
                         .HasColumnName("product_id");
 
-                    b.Property<string>("SizeName")
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("size_name");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea")
+                        .HasColumnName("row_version");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("size");
 
                     b.Property<string>("Sku")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
                         .HasColumnName("sku");
 
                     b.Property<int>("Stock")
@@ -117,7 +133,7 @@ namespace Modules.Catalog.Infrastructure.Migrations.Catalog
                     b.ToTable("catalog_product_variants", "catalog");
                 });
 
-            modelBuilder.Entity("Modules.Catalog.Infrastructure.Database.OutboxMessage", b =>
+            modelBuilder.Entity("Modules.Common.Infrastructure.Messaging.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

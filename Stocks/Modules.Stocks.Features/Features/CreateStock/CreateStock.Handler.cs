@@ -24,7 +24,7 @@ internal sealed class CreateStockHandler(
         CancellationToken cancellationToken)
     {
         var existingStock = await context.ProductStocks
-            .FirstOrDefaultAsync(x => x.ProductName == request.ProductName, cancellationToken);
+            .FirstOrDefaultAsync(x => x.ProductName == request.ProductName || x.ProductId == request.ProductId, cancellationToken);
 
         if (existingStock is not null)
         {
@@ -33,11 +33,11 @@ internal sealed class CreateStockHandler(
         }
 
         var productStock = CreateProductStock(request);
-        
+
         await context.ProductStocks.AddAsync(productStock, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
-        
-        logger.LogInformation("Created stock for product '{ProductName}' with quantity {Quantity}", 
+
+        logger.LogInformation("Created stock for product '{ProductName}' with quantity {Quantity}",
             request.ProductName, request.Quantity);
 
         return MapToCreateStockResponse(productStock);
@@ -47,6 +47,7 @@ internal sealed class CreateStockHandler(
         => new()
         {
             Id = Guid.NewGuid(),
+            ProductId = request.ProductId,
             ProductName = request.ProductName,
             AvailableQuantity = request.Quantity,
             LastUpdatedAt = DateTime.UtcNow

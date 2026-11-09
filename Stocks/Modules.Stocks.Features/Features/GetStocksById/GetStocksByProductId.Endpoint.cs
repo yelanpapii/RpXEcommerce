@@ -24,12 +24,13 @@ public class GetStocksByProductNameApiEndpoint : IApiEndpoint
 	}
 
     private static async Task<IResult> Handle(
-        [FromQuery] string productName,
-        IValidator<GetStocksByProductNameRequest> validator,
+        [FromQuery] Guid productId,
+		[FromQuery] Guid? variantId,
+		IValidator<GetStocksByProductIdRequest> validator,
         [FromServices] IStockModuleApi api,
         CancellationToken cancellationToken)
     {
-        var request = new GetStocksByProductNameRequest(productName);
+        var request = new GetStocksByProductIdRequest(productId, variantId);
         
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
@@ -37,7 +38,7 @@ public class GetStocksByProductNameApiEndpoint : IApiEndpoint
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var response = await api.GetStockByProductNameAsync(request, cancellationToken);
+        var response = await api.GetStockByProductIdAsync(request, cancellationToken);
         if (response.IsError)
         {
             return response.Errors.ToProblem();

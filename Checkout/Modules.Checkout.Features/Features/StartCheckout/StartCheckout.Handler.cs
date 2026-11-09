@@ -66,7 +66,7 @@ internal sealed class StartCheckoutHandler(
 			}
 
 			var variant = productResult.Value!.Variants.FirstOrDefault(productVariant =>
-				productVariant.Size == item.Size
+				productVariant.SizeCode == item.Size
 				&& (productVariant.ColorName == item.Color || productVariant.ColorCode == item.Color));
 			if (variant is null || variant.Price != item.UnitPrice)
 			{

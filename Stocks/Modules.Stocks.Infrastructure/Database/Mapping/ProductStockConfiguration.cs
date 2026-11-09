@@ -10,6 +10,8 @@ public class ProductStockConfiguration : IEntityTypeConfiguration<ProductStock>
     {
         entity.HasKey(x => x.Id);
         entity.HasIndex(x => x.ProductName).IsUnique();
+        entity.Property(x => x.ProductId).IsRequired();
+        entity.Property(x => x.VariantId).IsRequired();
 
         entity.Property(x => x.ProductName).IsRequired();
         entity.Property(x => x.AvailableQuantity).IsRequired();

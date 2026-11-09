@@ -4,4 +4,4 @@ using System.Text;
 
 namespace Modules.Stocks.PublicApi.Contracts;
 
-public sealed record StockResponse(string ProductName, int Quantity);
+public sealed record StockResponse(string ProductId, string VariantId, string ProductName, int Quantity);

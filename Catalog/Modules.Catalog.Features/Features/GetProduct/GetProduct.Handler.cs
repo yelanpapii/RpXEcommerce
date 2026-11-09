@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Modules.Catalog.Features.Features.Shared.Converters;
 using Modules.Catalog.Infrastructure.Database;
 using Modules.Catalog.PublicApi.Contracts;
 using Modules.Common.Domain.Handlers;
@@ -15,7 +16,8 @@ internal interface IGetProductHandler : IHandler
 
 internal sealed class GetProductHandler(
 	CatalogDbContext dbContext,
-	ILogger<GetProductHandler> logger)
+	ILogger<GetProductHandler> logger,
+	ProductMapper productMapper)
 	: IGetProductHandler
 {
 	public async Task<Result<ProductDto>> HandleAsync(string productId, CancellationToken cancellationToken)
@@ -24,7 +26,22 @@ internal sealed class GetProductHandler(
 
 		var product = await dbContext.Products
 			.AsNoTracking()
-			.Include(p => p.Variants)
+			.Where(p => p.Id == Guid.Parse(productId))
+			.Select(p => new ProductProjection(
+				p.Id,
+				p.Name,
+				p.Description,
+				p.CategoryCode.ToString(),
+				p.StyleId,
+				p.Variants.Select(variant => new ProductVariantProjection(
+					variant.Id,
+					variant.ProductId,
+					variant.Sku,
+					variant.Color.Code,
+					variant.Size.Code,
+					variant.Price,
+					variant.Stock)).ToList(),
+				p.CreatedAt))
 			.FirstOrDefaultAsync(p => p.Id == Guid.Parse(productId), cancellationToken);
 
 		if (product is null)
@@ -33,20 +50,6 @@ internal sealed class GetProductHandler(
 			return CatalogErrors.NotFound(productId);
 		}
 
-		return new ProductDto(
-			product.Id,
-			product.Name,
-			product.Description,
-			product.CategoryCode,
-			product.StyleId,
-			product.Variants.Select(variant => new ProductVariantDto(
-				variant.Id,
-				variant.Sku.ToString(),
-				variant.ColorName,
-				variant.ColorCode,
-				variant.SizeName,
-				variant.Price,
-				variant.Stock)).ToList(),
-			product.CreatedAt);
+		return productMapper.ToDto(product);
 	}
 }

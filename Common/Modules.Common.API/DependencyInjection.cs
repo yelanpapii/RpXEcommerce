@@ -32,7 +32,7 @@ public static class DependencyInjection
 
         services.AddSwaggerGen(options =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "RPX Ecommerce API", Version = "v1" });
 
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
@@ -65,7 +65,20 @@ public static class DependencyInjection
 
     public static void AddCoreHostLogging(this WebApplicationBuilder builder)
     {
-        builder.Host.UseSerilog((context, loggerConfig) =>
-            loggerConfig.ReadFrom.Configuration(context.Configuration));
-    }
+		builder.Host.UseSerilog((context, loggerConfiguration) =>
+		{
+			loggerConfiguration
+				.ReadFrom.Configuration(context.Configuration)
+				.Enrich.FromLogContext()
+				.WriteTo.OpenTelemetry(options =>
+				{
+					options.Endpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+					options.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
+					options.ResourceAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+					{
+						["service.name"] = builder.Environment.ApplicationName
+					};
+				});
+		});
+	}
 }

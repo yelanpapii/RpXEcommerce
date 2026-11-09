@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Modules.Catalog.Domain.Policies;
 using Modules.Catalog.Features.Features.Shared.Routes;
 using Modules.Catalog.PublicApi;
@@ -21,7 +22,8 @@ public class GetAllProductsEndpoint : IApiEndpoint
 			.WithTags(RouteConsts.CommonTag)
 			.RequireAuthorization(CatalogPolicyConsts.ReadPolicy)
 			.WithSummary("Retrieves all products.")
-			.WithDescription("This endpoint allows authorized users to retrieve a list of all products.");
+			.WithDescription("This endpoint allows authorized users to retrieve a list of all products.")
+			.CacheOutput("ShortTTL");
 	}
 
 	private static async Task<Microsoft.AspNetCore.Http.IResult> Handle(

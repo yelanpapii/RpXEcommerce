@@ -21,7 +21,7 @@ public readonly partial record struct ClothingSku
 
 		if (!ClothingSkuRegex.IsMatch(fullSku))
 		{
-			throw new ArgumentException($"Formato de SKU inválido: '{fullSku}'");
+			throw new ArgumentException($"Invalid SKU format: '{fullSku}'");
 		}
 			
 
@@ -32,7 +32,7 @@ public readonly partial record struct ClothingSku
 	{
 		if (string.IsNullOrWhiteSpace(value) || !ClothingSkuRegex.IsMatch(value.ToUpperInvariant()))
 		{
-			throw new ArgumentException($"El SKU recuperado de la base de datos está corrupto: '{value}'");
+			throw new ArgumentException($"The SKU retrieved from the database is corrupt: '{value}'");
 		}
 
 		return new ClothingSku(value.ToUpperInvariant());
@@ -40,6 +40,7 @@ public readonly partial record struct ClothingSku
 
 	public override string ToString() => _value;
 	public static implicit operator string(ClothingSku sku) => sku._value;
+	public static ClothingSku FromPersistedValue(string value) => new(value);
 
 	[GeneratedRegex(@"^[A-Z]{3,4}-[0-9]{4}-[A-Z]{3}-[A-Z0-9]{1,3}$", RegexOptions.Compiled)]
 	private static partial Regex ClothingRegex();

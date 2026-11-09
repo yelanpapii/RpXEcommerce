@@ -13,7 +13,7 @@ internal sealed class StockModuleApi(
     ICheckStockHandler checkStockHandler,
     IDecreaseStockHandler decreaseStockHandler,
     IIncreaseStockHandler increaseStockHandler,
-	IGetStocksByProductNameHandler getStocksByProductNameHandler,
+	IGetStocksByProductIdHandler getStocksByProductIdHandler,
 	ICreateStockHandler createStockHandler) : IStockModuleApi
 {
     public async Task<Result<Success>> CheckStockAsync(
@@ -23,11 +23,11 @@ internal sealed class StockModuleApi(
         return await checkStockHandler.HandleAsync(request, cancellationToken);
     }
 
-	public async Task<Result<StockResponse>> GetStockByProductNameAsync(
-		GetStocksByProductNameRequest request,
+	public async Task<Result<List<StockResponse>>> GetStockByProductIdAsync(
+		GetStocksByProductIdRequest request,
 		CancellationToken cancellationToken)
 	{
-		return await getStocksByProductNameHandler.HandleAsync(request, cancellationToken);
+		return await getStocksByProductIdHandler.HandleAsync(request, cancellationToken);
 	}
 
 	public async Task<Result<Success>> IncreaseStockAsync(

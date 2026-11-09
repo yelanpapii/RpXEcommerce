@@ -4,4 +4,4 @@ using System.Text;
 
 namespace Modules.Stocks.PublicApi.Contracts;
 
-public sealed record CreateStockRequest(string ProductName, int Quantity);
+public sealed record CreateStockRequest(string ProductName, int Quantity, Guid ProductId, IReadOnlyDictionary<string, string> StockByVariant);

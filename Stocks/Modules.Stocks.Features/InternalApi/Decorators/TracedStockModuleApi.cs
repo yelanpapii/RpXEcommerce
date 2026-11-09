@@ -87,17 +87,18 @@ public class TracedStockModuleApi(IStockModuleApi inner) : IStockModuleApi
         }
     }
 
-	public async Task<Result<StockResponse>> GetStockByProductNameAsync(GetStocksByProductNameRequest request, CancellationToken cancellationToken)
+	public async Task<Result<List<StockResponse>>> GetStockByProductIdAsync(GetStocksByProductIdRequest request, CancellationToken cancellationToken)
 	{
 		using var activity = StocksActivitySource.Instance.StartActivity($"{StocksActivitySource.Instance.Name}.get-stock-by-product-name");
 
 		activity?.SetTag("module", StocksActivitySource.Instance.Name);
-		activity?.SetTag("operation", "GetStockByProductName");
-		activity?.SetTag("product.name", request.ProductName ?? string.Empty);
+		activity?.SetTag("operation", "GetStockByProductId");
+		activity?.SetTag("product.id", request.ProductId.ToString());
+		activity?.SetTag("variant.id", request.VariantId?.ToString() ?? string.Empty);
 
 		try
 		{
-			var response = await inner.GetStockByProductNameAsync(request, cancellationToken);
+			var response = await inner.GetStockByProductIdAsync(request, cancellationToken);
 
 			activity?.SetTag("stock.found", response.IsSuccess);
 			activity?.SetStatus(ActivityStatusCode.Ok);

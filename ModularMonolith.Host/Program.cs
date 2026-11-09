@@ -63,6 +63,8 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseOutputCache();
+
 app.UseModuleMiddlewares();
 
 app.MapApiEndpoints();

@@ -21,7 +21,7 @@ public interface IStockModuleApi
         DecreaseStockRequest request,
         CancellationToken cancellationToken);
 
-	Task<Result<StockResponse>> GetStockByProductNameAsync(
-		GetStocksByProductNameRequest request,
+	Task<Result<List<StockResponse>>> GetStockByProductIdAsync(
+		GetStocksByProductIdRequest request,
 		CancellationToken cancellationToken);
 }
